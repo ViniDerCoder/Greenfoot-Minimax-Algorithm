@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.target=TicTacToe
+comment0.text=\r\n\ Write\ a\ description\ of\ class\ TicTacToe\ here.\r\n\ \r\n\ @author\ (your\ name)\ \r\n\ @version\ (a\ version\ number\ or\ a\ date)\r\n
+comment1.params=
+comment1.target=void\ act()
+comment1.text=\r\n\ Act\ -\ do\ whatever\ the\ TicTacToe\ wants\ to\ do.\ This\ method\ is\ called\ whenever\r\n\ the\ 'Act'\ or\ 'Run'\ button\ gets\ pressed\ in\ the\ environment.\r\n
+comment2.params=
+comment2.target=void\ generateWorld()
+comment3.params=
+comment3.target=int[][]\ calculatePlayerImagePositions()
+comment4.params=mouseX\ mouseY
+comment4.target=int\ calculateFieldOfClick(int,\ int)
+comment5.params=field
+comment5.target=boolean\ playerMove(int)
+comment6.params=
+comment6.target=boolean\ computerMove()
+comment7.params=field
+comment7.target=void\ markField(int)
+comment8.params=
+comment8.target=void\ finishGame()
+comment9.params=
+comment9.target=Game.GameField\ getCurrentGameField()
+numComments=10
