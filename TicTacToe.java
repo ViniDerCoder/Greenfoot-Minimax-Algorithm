@@ -30,11 +30,7 @@ public class TicTacToe extends Game
         };
         
         public TicTacToeField() {
-            this.field = new PlayerSymbol[] {
-                null, null, null,
-                null, null, null,
-                null, null, null
-            };
+            this.field = new PlayerSymbol[9];
         }
         
         public TicTacToeField makeMove(int move, boolean computer) {
@@ -91,20 +87,13 @@ public class TicTacToe extends Game
     public static final PlayerSymbol humanPlayer = TicTacToe.computerPlayer == PlayerSymbol.X ? PlayerSymbol.O : PlayerSymbol.X;
     private boolean gameFinished = false;
     
-    /**
-     * Act - do whatever the TicTacToe wants to do. This method is called whenever
-     * the 'Act' or 'Run' button gets pressed in the environment.
-     */
-    public void act()
-    {
+    public void act() {
         if(currentPlayer == computerPlayer) computerMove();
-        MouseInfo mouse = Greenfoot.getMouseInfo();
-        if(mouse != null) {
-            int button = mouse.getButton();
-            if(button == 1) {
-                playerMove(calculateFieldOfClick(mouse.getX(), mouse.getY())); 
-            }
-        }
+    }
+    
+    public void onLeftClick(int mouseX, int mouseY) {
+        if(this.gameFinished) getWorld().repaint();
+        else playerMove(calculateFieldOfClick(mouseX, mouseY)); 
     }
     
     public void generateWorld() {
@@ -113,6 +102,7 @@ public class TicTacToe extends Game
 
         this.setImage("images/nothing.png");
         
+        canvas.setColor(Color.BLACK);
         canvas.drawString("Minimax: " + computerPlayer.toString(), 5, 80);
         canvas.drawString("Player: " + humanPlayer.toString(), 5, 100);
         

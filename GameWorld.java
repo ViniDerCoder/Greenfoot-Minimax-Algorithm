@@ -6,10 +6,29 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  * @version (a version number or a date)
  */
 public class GameWorld extends World
-{       
+{
+    public static final GreenfootImage SWITCH_GAME = new GreenfootImage("images/SwitchGameButton.png");
+    
     public static enum ExistingGames {
         TicTacToe,
-        ConnectFour
+        ConnectFour;
+        
+        public ExistingGames nextGame() {
+            ExistingGames[] values = ExistingGames.values();
+            
+            int ordinal = this.ordinal();
+            int nextOrdinal = (ordinal + 1) % values.length;
+            
+            return values[nextOrdinal];
+        }
+        
+        public GreenfootImage gameIcon() {
+            return new GreenfootImage("images/GameIcons/" + ExistingGames.values()[this.ordinal()].toString() + ".png");
+        }
+        
+        public GreenfootImage nextGameIcon() {
+            return nextGame().gameIcon();
+        }
     };
     
     private ExistingGames selectedGame = ExistingGames.TicTacToe;
@@ -24,6 +43,22 @@ public class GameWorld extends World
         resetWorld();
         
         Greenfoot.start();
+    }
+    
+    boolean skipNextClick = false;
+    public void act() {
+        MouseInfo mouse = Greenfoot.getMouseInfo();
+        if(mouse != null) {
+            int button = mouse.getButton();
+            if(button == 1 && !skipNextClick) {
+                skipNextClick = true;
+                if(mouse.getX() > 10 && mouse.getX() < 110 && mouse.getY() > 490 && mouse.getY() < 590) {
+                    switchGame(this.selectedGame.nextGame());
+                } else {
+                    this.game.onLeftClick(mouse.getX(), mouse.getY());
+                }
+            } else if(button == 1) skipNextClick = false;
+        }
     }
     
     private void createNewGame() {
@@ -46,8 +81,13 @@ public class GameWorld extends World
         createNewGame();
         this.addObject(this.game, 1, 1);
         drawTitle(this.selectedGame.toString());
+        drawSwitchGameButton(this.selectedGame.nextGameIcon());
         
         game.generateWorld();
+    }
+    
+    public void repaint() {
+        this.resetWorld();
     }
     
     private void drawTitle(String title) {
@@ -57,7 +97,14 @@ public class GameWorld extends World
         canvas.drawString(title, 4, 22);
     }
     
-    public void clearWorld() {
+    private void drawSwitchGameButton(GreenfootImage image) {
+        GreenfootImage canvas = getBackground();
+        canvas.setColor(Color.GRAY);
+        canvas.drawRect(5, 485, 110, 110);
+        canvas.drawImage(image, 10, 490);
+    }
+    
+    private void clearWorld() {
         this.getBackground().clear();
         this.setBackground(new GreenfootImage(" 0 ", 100, new Color(0, 0, 0, 0), new Color(0, 0, 0, 0)));
         this.removeObjects(this.getObjects(null));

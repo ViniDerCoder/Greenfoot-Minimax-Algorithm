@@ -31,6 +31,10 @@ public class Game extends Actor
         }
     }
     
+    public void onLeftClick(int mouseX, int mouseY) {
+        throw new Error("Method 'onLeftClick' not implemented!");
+    }
+    
     public GameField getCurrentGameField() {
         throw new Error("Method 'getCurrentGameField' not implemented!");
     }
