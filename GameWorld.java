@@ -7,8 +7,6 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  */
 public class GameWorld extends World
 {
-    public static final GreenfootImage SWITCH_GAME = new GreenfootImage("images/SwitchGameButton.png");
-    
     public static enum ExistingGames {
         TicTacToe,
         ConnectFour;
@@ -43,21 +41,25 @@ public class GameWorld extends World
         resetWorld();
         
         Greenfoot.start();
+        Greenfoot.setSpeed(50);
     }
     
     boolean skipNextClick = false;
+    int clickPause = 0;
     public void act() {
         MouseInfo mouse = Greenfoot.getMouseInfo();
         if(mouse != null) {
             int button = mouse.getButton();
-            if(button == 1 && !skipNextClick) {
+            if(button == 1 && !skipNextClick && clickPause <= 0) {
                 skipNextClick = true;
+                clickPause = 35;
                 if(mouse.getX() > 10 && mouse.getX() < 110 && mouse.getY() > 490 && mouse.getY() < 590) {
                     switchGame(this.selectedGame.nextGame());
                 } else {
                     this.game.onLeftClick(mouse.getX(), mouse.getY());
                 }
             } else if(button == 1) skipNextClick = false;
+            if(clickPause > 0) clickPause--;
         }
     }
     
@@ -100,7 +102,7 @@ public class GameWorld extends World
     private void drawSwitchGameButton(GreenfootImage image) {
         GreenfootImage canvas = getBackground();
         canvas.setColor(Color.GRAY);
-        canvas.drawRect(5, 485, 110, 110);
+        canvas.drawRect(5, 485, image.getWidth() + 10, image.getHeight() + 10);
         canvas.drawImage(image, 10, 490);
     }
     

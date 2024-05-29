@@ -29,6 +29,10 @@ public class Game extends Actor
         public int[] getPossibleMoves() {
             throw new Error("Method 'GameField.getPossibleMoves' not implemented!");
         }
+        
+        public String toString() {
+            throw new Error("Method 'GameField.toString' not implemented!");
+        }
     }
     
     public void onLeftClick(int mouseX, int mouseY) {

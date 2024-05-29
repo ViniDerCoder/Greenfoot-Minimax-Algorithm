@@ -79,6 +79,18 @@ public class TicTacToe extends Game
             if(this.getPossibleMoves().length < 1) return Game.GameState.Tie;
             else return Game.GameState.Unfinished;
         }
+        
+        public String toString() {
+            String str = "";
+            
+            for(PlayerSymbol i : this.field) {
+                if(i == PlayerSymbol.X) str = str + "X";
+                else if(i == PlayerSymbol.O) str = str + "O";
+                else str = str + "-";
+            }
+            
+            return str;
+        }
     };
     
     private TicTacToeField gameField = new TicTacToeField();
@@ -86,6 +98,7 @@ public class TicTacToe extends Game
     public static final PlayerSymbol computerPlayer = PlayerSymbol.X;
     public static final PlayerSymbol humanPlayer = TicTacToe.computerPlayer == PlayerSymbol.X ? PlayerSymbol.O : PlayerSymbol.X;
     private boolean gameFinished = false;
+    private Minimax minimax = new Minimax(this, 10);
     
     public void act() {
         if(currentPlayer == computerPlayer) computerMove();
@@ -104,7 +117,7 @@ public class TicTacToe extends Game
         
         canvas.setColor(Color.BLACK);
         canvas.drawString("Minimax: " + computerPlayer.toString(), 5, 80);
-        canvas.drawString("Player: " + humanPlayer.toString(), 5, 100);
+        canvas.drawString("  Player: " + humanPlayer.toString(), 5, 100);
         
         this.fieldImageCoordinates = calculatePlayerImagePositions();
     }
@@ -161,7 +174,7 @@ public class TicTacToe extends Game
     
     public boolean computerMove() {
         if(this.gameFinished || this.currentPlayer != TicTacToe.computerPlayer) return false;
-        int move = new Minimax(this, 10).calculateBestMove();
+        int move = this.minimax.calculateBestMove();
         
         this.markField(move);
         return true;
@@ -192,6 +205,8 @@ public class TicTacToe extends Game
         if(gameState == Game.GameState.Tie) canvas.drawString("Tie!", 30, 200);
         if(gameState == Game.GameState.Win) canvas.drawString("You lost!", 15, 200);
         if(gameState == Game.GameState.Lose) canvas.drawString("You won!", 16, 200);
+        
+        Greenfoot.delay(10);
     }
     
     public Game.GameField getCurrentGameField() {

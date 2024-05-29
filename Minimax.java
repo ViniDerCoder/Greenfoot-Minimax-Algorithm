@@ -1,3 +1,5 @@
+import java.util.*;
+
 /**
  * Write a description of class Minimax here.
  * 
@@ -7,6 +9,7 @@
 public class Minimax {
     Game game;   
     int maxDepth;
+    Map<String, Integer> hashMap = new HashMap<String, Integer>(); 
     
     public Minimax(Game game, int maxDepth) {
         this.maxDepth = maxDepth;
@@ -15,8 +18,8 @@ public class Minimax {
     
     private int getScore(Game.GameState gameState) {
         switch(gameState) {
-            case Win: return 10;
-            case Lose: return -10;
+            case Win: return 1000;
+            case Lose: return -1000;
             default: return 0;
         }
     }
@@ -40,6 +43,10 @@ public class Minimax {
     private int minimax(Game.GameField field, boolean maximizing, int depth) {
         Game.GameState gameState = field.getGameState();
         if(gameState != Game.GameState.Unfinished || depth > this.maxDepth) return getScore(gameState);
+        String gameString = field.toString();
+        
+        Integer mappedScore = hashMap.get(gameString);
+        if(mappedScore != null) return (int)mappedScore;
         
         int[] possibleMoves = field.getPossibleMoves();
         
@@ -48,8 +55,12 @@ public class Minimax {
             
             for(int move : possibleMoves) {
                 int score = minimax(field.makeMove(move, true), false, depth+1);
+                
                 bestScore = Math.max(bestScore, score);
             }
+            bestScore -= depth;
+            
+            hashMap.put(gameString, bestScore);
             
             return bestScore;
         } else {
@@ -60,6 +71,9 @@ public class Minimax {
                 
                 bestScore = Math.min(bestScore, score);
             }
+            bestScore -= depth;
+            
+            hashMap.put(gameString, bestScore);
             
             return bestScore;
         }

@@ -14,6 +14,10 @@ public class ConnectFour extends Game
         RED, YELLOW
     }
     
+    public static final GreenfootImage OUTLINE = new GreenfootImage("images/ConnectFourGameBoard.png");
+    public static final GreenfootImage PLAYER_RED = new GreenfootImage("images/ConnectFourRed.png");
+    public static final GreenfootImage PLAYER_YELLOW = new GreenfootImage("images/ConnectFourYellow.png");
+    
     private PlayerColor currentPlayer = new Random().nextBoolean() ? PlayerColor.YELLOW : PlayerColor.RED;
     public static PlayerColor computerPlayer = PlayerColor.YELLOW;
     public static PlayerColor humanPlayer = ConnectFour.computerPlayer == PlayerColor.YELLOW ? PlayerColor.RED : PlayerColor.YELLOW;
@@ -33,22 +37,27 @@ public class ConnectFour extends Game
             this.field = new PlayerColor[FIELD_WIDTH][FIELD_HEIGHT];
         };
     
-        public GameField makeMove(int move, boolean computer) {
+        public ConnectFourField makeMove(int move, boolean computer) {
             return this.makeMove(move, computer ? ConnectFour.computerPlayer : ConnectFour.humanPlayer);
         }
+        
+        public int getLowestLine(int column) {
+           for(int i = 0; i < FIELD_HEIGHT; i++) {
+                if(this.field[column][i] == null) {
+                    return i;
+                }
+           }
+           return -1;
+        }
             
-        public GameField makeMove(int move, PlayerColor player) {
+        public ConnectFourField makeMove(int move, PlayerColor player) {
             if(this.field[move][FIELD_HEIGHT - 1] != null) throw new Error("Field is already occupied!");
             
             PlayerColor[][] newField = new PlayerColor[FIELD_WIDTH][];
             for(int i = 0; i < FIELD_WIDTH; i++) newField[i] = this.field[i].clone();
             
-            for(int i = 0; i < FIELD_HEIGHT; i++) {
-                if(newField[move][i] == null) {
-                    newField[move][i] = player;
-                    break;
-                }
-            }
+            newField[move][this.getLowestLine(move)] = player;
+            
             return new ConnectFourField(newField);
         }
     
@@ -68,7 +77,7 @@ public class ConnectFour extends Game
                         /*Check for bounds*/        line+3 <= FIELD_HEIGHT - 1 && column+3 <= FIELD_WIDTH - 1
                         /*Check 1. diagonal line*/  && cField == this.field[column+1][line+1] && cField == this.field[column+2][line+2] && cField == this.field[column+3][line+3]
                     )||(
-                        /*Check for bounds*/        line-3 >= 0 - 1 && column+3 <= FIELD_WIDTH - 1 
+                        /*Check for bounds*/        line-3 >= 0 && column+3 <= FIELD_WIDTH - 1 
                         /*Check 2. diagonal line*/  && cField == this.field[column+1][line-1] && cField == this.field[column+2][line-2] && cField == this.field[column+3][line-3]
                     )) return cField == ConnectFour.humanPlayer ? Game.GameState.Lose : Game.GameState.Win;
                 }
@@ -90,12 +99,76 @@ public class ConnectFour extends Game
             }
             return newArray;
         }
+        
+        public String toString() {
+            String str = "";
+            
+            for(PlayerColor[] i : this.field) {
+                for(PlayerColor j : i) {
+                    if(j == PlayerColor.RED) str = str + "R";
+                    else if(j == PlayerColor.YELLOW) str = str + "Y";
+                    else str = str + "-";
+                }
+            }
+            
+            return str;
+        }
     }
     
     private ConnectFourField gameField = new ConnectFourField();
+    private Minimax minimax = new Minimax(this, 8);
+    
+    int computerSleepTimer = 50;
+    public void act() {
+        if(this.currentPlayer == ConnectFour.computerPlayer && computerSleepTimer <= 0) computerMove();
+        else if(this.currentPlayer != ConnectFour.computerPlayer) computerSleepTimer = 50;
+        
+        computerSleepTimer--;
+    }
     
     public void onLeftClick(int mouseX, int mouseY) {
-        throw new Error("Method 'onLeftClick' not implemented!");
+        if(this.gameFinished) getWorld().repaint();
+        double column = (mouseX - 174 + 6.0) / (PLAYER_RED.getWidth()  +  12.0);
+        if(column > 0) {
+            int nearestColumn = (int)column;
+            playerMove(nearestColumn);
+        } 
+    }
+    
+    public void playerMove(int column) {
+        if(this.currentPlayer == ConnectFour.computerPlayer || this.gameFinished) return;
+        int line = this.gameField.getLowestLine(column);
+        if(line < 0) return;
+        
+        this.currentPlayer = ConnectFour.computerPlayer;
+        this.gameField = this.gameField.makeMove(column, ConnectFour.humanPlayer);
+        this.markField(ConnectFour.humanPlayer, column, line);
+        if(this.gameField.getGameState() != Game.GameState.Unfinished) finishGame();
+    }
+    
+    public void computerMove() {
+        if(this.gameFinished || this.currentPlayer != ConnectFour.computerPlayer) return;
+        int move = this.minimax.calculateBestMove();
+        int line = this.gameField.getLowestLine(move);
+        if(line < 0) return;
+        
+        this.currentPlayer = ConnectFour.humanPlayer;
+        this.gameField = this.gameField.makeMove(move, ConnectFour.computerPlayer);
+        this.markField(ConnectFour.computerPlayer, move, line);
+        if(this.gameField.getGameState() != Game.GameState.Unfinished) finishGame();
+    }
+    
+    private void finishGame() {
+        this.gameFinished = true;
+        Game.GameState gameState = this.gameField.getGameState();
+        
+        GreenfootImage canvas = getWorld().getBackground();
+        canvas.setColor(Color.RED);
+        if(gameState == Game.GameState.Tie) canvas.drawString("Tie!", 30, 200);
+        if(gameState == Game.GameState.Win) canvas.drawString("You lost!", 15, 200);
+        if(gameState == Game.GameState.Lose) canvas.drawString("You won!", 16, 200);
+        
+        Greenfoot.delay(10);
     }
     
     public GameField getCurrentGameField() {
@@ -103,6 +176,27 @@ public class ConnectFour extends Game
     }
     
     public void generateWorld() {
-        throw new Error("Method 'generateWorld' not implemented!");
+        GreenfootImage canvas = getWorld().getBackground();
+        canvas.drawImage(OUTLINE, ((canvas.getWidth() - OUTLINE.getWidth()) / 2) + 50, ((canvas.getHeight() - OUTLINE.getHeight()) / 2));
+        
+        this.setImage("images/nothing.png");
+        
+        canvas.setColor(Color.BLACK);
+        canvas.drawString("Minimax: ", 5, 80);
+        canvas.setColor(this.computerPlayer == PlayerColor.RED ? Color.RED : Color.YELLOW);
+        canvas.drawString("#", 100, 80);
+        canvas.setColor(Color.BLACK);
+        canvas.drawString("  Player: ", 5, 100);
+        canvas.setColor(this.humanPlayer == PlayerColor.RED ? Color.RED : Color.YELLOW);
+        canvas.drawString("#", 100, 100);
+    }
+    
+    private void markField(PlayerColor player, int column, int line) {
+        int x = column            *   (PLAYER_RED.getWidth()  +  12)  +  174;
+        int y = Math.abs(line-5)  *   (PLAYER_RED.getHeight() +  12)  +  63;
+        
+        GreenfootImage canvas = getWorld().getBackground();
+        
+        canvas.drawImage(player == PlayerColor.RED ? PLAYER_RED : PLAYER_YELLOW, x, y);
     }
 }
